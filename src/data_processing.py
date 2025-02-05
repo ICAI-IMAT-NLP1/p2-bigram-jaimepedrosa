@@ -30,7 +30,19 @@ def load_and_preprocess_data(
         lines: List[str] = file.read().splitlines()
 
     # TODO
-    bigrams: List[Tuple[str, str]] = None
+    bigrams: List[Tuple[str, str]] = []
+
+    cleaned_names = []
+    for line in lines:
+        words = []
+        for word in line.split():
+            if not word.replace(',', '').replace('.', '').isdigit():
+                cleaned_names.append(word)
+
+    for name in cleaned_names:
+        name = "-" + name.lower() + "."
+        for i in range(len(name)-1):
+            bigrams.append((name[i],name[i+1]))
 
     return bigrams
 
@@ -49,8 +61,12 @@ def char_to_index(alphabet: str, start_token: str, end_token: str) -> Dict[str, 
     """
     # Create a dictionary with start token at the beginning and end token at the end
     # TODO
-    char_to_idx: Dict[str, int] = None
+    char_to_idx: Dict[str, int] = dict()
+    alphabet = start_token + alphabet + end_token
 
+    for i in range(len(alphabet)):
+        char_to_idx[alphabet[i]] = i
+    
     return char_to_idx
 
 
@@ -66,7 +82,10 @@ def index_to_char(char_to_index: Dict[str, int]) -> Dict[int, str]:
     """
     # Reverse the char_to_index mapping
     # TODO
-    idx_to_char: Dict[int, str] = None
+    idx_to_char: Dict[int, str] = dict()
+
+    for k, v in char_to_index.items():
+        idx_to_char[v] = k
 
     return idx_to_char
 
@@ -92,13 +111,21 @@ def count_bigrams(
     """
 
     # Initialize a 2D tensor for counting bigrams
-    # TODO
-    bigram_counts: torch.Tensor = None
-
+    # TODO    
+    num_chars = len(char_to_idx)
+    bigram_counts: torch.Tensor = torch.zeros(num_chars, num_chars, dtype=torch.int32)
+    
     # Iterate over each bigram and update the count in the tensor
     # TODO
+    
+    for char1, char2 in bigrams:
+        if char1 in char_to_idx and char2 in char_to_idx:
+            i = char_to_idx[char1]
+            j = char_to_idx[char2]
+            bigram_counts[i, j] += 1
 
     return bigram_counts
+
 
 
 def plot_bigram_counts(bigram_counts: torch.Tensor, idx_to_char: Dict):
